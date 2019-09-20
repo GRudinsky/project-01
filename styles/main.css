@@ -36,9 +36,15 @@ body {
 }
 
 .grid div.player {
-  background-image: url("https://giantbomb1.cbsistatic.com/uploads/original/12/129563/2926205-pacman.png");
+  background-image: url("../images/pacman.png");
   background-repeat: no-repeat;
   background-size: cover;
+}
+.grid div.ghost {
+  background-image: url("../images/ghosts.jpeg");
+/* need to decide to stick un sizing units */
+  background-size: 6vh;
+  background-position-x: 1px;
 }
 
 /* .grid div.player[data-direction="forward"] {
