@@ -1,10 +1,30 @@
-
 document.addEventListener('DOMContentLoaded', () => {
   const width = 20
   const grid = document.querySelector('.grid')
   const cells = []
-  let playerIdx = 201
-  let ghostIdx = 88
+
+  let playerIdx = 378
+  let playerX
+  let playerY
+  function playerCoordinates() {
+    playerX = playerIdx % width
+    playerY = Math.floor(playerIdx / width)
+  }
+  playerCoordinates()
+
+  let ghostIdx = 81
+  let ghostPrevStep
+  // let ghostStepRight = ghostIdx + 1
+  // let ghostStepLeft = ghostIdx - 1
+  // let ghostStepUp = ghostIdx - width
+  // let ghostStepDown = ghostIdx + width
+  let ghostX
+  let ghostY
+  function ghostCoordinates() {
+    ghostX = ghostIdx % width
+    ghostY = Math.floor(ghostIdx / width)
+  }
+  ghostCoordinates()
 
   // Defining array of cell indexes for the possible moving path
   const path = [21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33, 34, 35, 36, 36, 37, 38, 41, 48, 51, 61, 81, 101, 121, 68, 71, 58, 78, 98, 88, 91, 82, 83,
@@ -34,10 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // function handleClick(e) {
-  //   console.log(x, y)
-  // }
-
   // Defining player
   cells[playerIdx].classList.add('player')
   const player = document.querySelector('.grid div.player')
@@ -45,120 +61,179 @@ document.addEventListener('DOMContentLoaded', () => {
   //Defining ghost
   cells[ghostIdx].classList.add('ghost')
   const ghost = document.querySelector('.grid div.ghost')
-  let ghostX = ghostIdx % width
-  let ghostY = Math.floor(ghostIdx / width)
 
   // Player movement
-  document.addEventListener('keyup', (e) => {
-
-    cells[playerIdx].classList.remove('player')
-    let playerX = playerIdx % width
-    let playerY = Math.floor(playerIdx / width)
-    console.log(playerX, playerY)
-
-    switch (e.keyCode) {
-      case 37: if (path.includes(playerIdx - 1)) {
-        playerIdx -= 1
-        // playerX  -= 1
-      } else if (playerX === 0) {
-        playerIdx += width - 1
+  function playerMovement() {
+    document.addEventListener('keyup', (e) => {
+      cells[playerIdx].classList.remove('player')
+      switch (e.keyCode) {
+        case 37: if (path.includes(playerIdx - 1)) {
+          playerIdx -= 1
+        } else if (playerX === 0) {
+          playerIdx += width - 1
+        }
+          break
+        case 38: if (path.includes(playerIdx - width))
+          playerIdx -= width
+          break
+        case 39: if (path.includes(playerIdx + 1)) {
+          playerIdx += 1
+        } else if (
+          playerX === width - 1) {
+          playerIdx -= width - 1
+        }
+          break
+        case 40: if (path.includes(playerIdx + width))
+          playerIdx += width
+          break
       }
-        break
-      case 38: if (path.includes(playerIdx - width)) 
-      playerIdx -= width 
-      playerY -= 1 
-        break
-      case 39: if (path.includes(playerIdx + 1)) {
-        playerIdx += 1
-        playerX += 1
-      } else if (
-        playerX === width - 1) {
-        playerIdx -= width - 1
-        playerX -= width - 1
-      }
-        break
-      case 40: if (path.includes(playerIdx + width)) 
-      playerIdx += width 
-      playerY += 1
-        break
-    }
-    cells[playerIdx].classList.add('player')
-  })
+      playerCoordinates()
+      cells[playerIdx].classList.add('player')
+    })
+    
+  }
 
   // Ghost movement
   function ghostMovement() {
-
-
-    // whole logic in between remove-add. 
-    // Run the while loop for ghos to go until end of line - DONE
-
-    setInterval(() => {
-      cells[ghostIdx].classList.remove('ghost')
-
-      //Ghost brain beta version
-      function ghostRight() {
+    function ghostRight() {
+      if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+        cells[ghostIdx].classList.remove('ghost')
+        ghostPrevStep = ghostIdx
+        console.log('going right')
         ghostIdx += 1
-        ghostX += 1
+        cells[ghostIdx].classList.add('ghost')
+        ghostCoordinates()
       }
-      function ghostDown() {
+    }
+    function ghostDown() {
+      if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+        cells[ghostIdx].classList.remove('ghost')
+        ghostPrevStep = ghostIdx
+        console.log('going down')
         ghostIdx += width
-        ghostY += 1
+        cells[ghostIdx].classList.add('ghost')
+        ghostCoordinates()
       }
-      function ghostLeft() {
+    }
+    function ghostLeft() {
+      if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+        cells[ghostIdx].classList.remove('ghost')
+        ghostPrevStep = ghostIdx
+        console.log('going left')
         ghostIdx -= 1
-        ghostX -= 1
+        cells[ghostIdx].classList.add('ghost')
+        ghostCoordinates()
       }
-      function ghostUp() {
+    }
+    function ghostUp() {
+      if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+        cells[ghostIdx].classList.remove('ghost')
+        ghostPrevStep = ghostIdx
+        console.log('going up')
         ghostIdx -= width
-        ghostY -= 1
+        cells[ghostIdx].classList.add('ghost')
+        ghostCoordinates()
       }
+    }
+    function ghostBrainV6() {
 
-      //Ghost brain beta version
-      function ghostBrainV1() {
-        if (path.includes(ghostIdx + 1) && ghostIdx < playerIdx) {
-          ghostRight()
-        } else if (path.includes(ghostIdx + width) && ghostIdx < playerIdx) {
+      //if ghost is HIGH LEFT
+      if (ghostX < playerX && ghostY < playerY) {
+        console.log('HIGH LEFT')
+        if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+          console.log('High left DOWN')
           ghostDown()
-        }
-        else if (path.includes(ghostIdx - 1) && ghostIdx > playerIdx) {
+        } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+          console.log('High left RIGHT')
+          ghostRight()
+        } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+          console.log('High left LEFT')
           ghostLeft()
-        } else if (path.includes(ghostIdx - width) && ghostIdx > playerIdx) {
+        } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+          console.log('High left UP')
+          ghostUp()
+        } else {
+          console.log('return')
+          return
+        }
+
+        //if ghost is HIGH RIGHT
+      } else if (ghostX > playerX && ghostY < playerY) {
+        console.log('HIGHT RIGHT')
+        if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+          ghostLeft()
+        } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+          ghostDown()
+        } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+          ghostUp()
+        } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+          ghostRight()
+        } else {
+          return
+        }
+
+        // ghost is BOTTOM RIGHT
+
+      } else if (ghostX > playerX && ghostY > playerY) {
+        console.log('BOTTOM RIGHT')
+        if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+          ghostUp()
+        } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+          ghostLeft()
+        } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+          ghostDown()
+        } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+          ghostRight()
+        } else {
+          return
+        }
+        // ghost is BOTTOM LEFT
+      } else if (ghostX < playerX && ghostY > playerY) {
+        console.log('BOTTOM LEFT')
+
+        if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+          ghostRight()
+        } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+          ghostUp()
+        } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+          ghostDown()
+        } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+          ghostLeft()
+        } else {
+          return
+        }
+
+        //Ghost higher or lower on same X axis
+      } else if (ghostX === playerX) {
+        if (path.includes(ghostIdx - width) && (ghostY > playerY)) {
+          ghostUp()
+        } else if (path.includes(ghostIdx + width) && (ghostY < playerY)) {
+          ghostDown()
+        } else if (path.includes(ghostIdx - 1)) {
+          ghostLeft()
+        } else if (path.includes(ghostIdx + 1)) {
+          ghostRight()
+        }
+
+        //Ghost is left ort right on same Y axis
+      } else if (ghostY === playerY) {
+        if (path.includes(ghostIdx + 1) && (ghostX < playerX)) {
+          ghostRight()
+        } else if (path.includes(ghostIdx - 1) && (ghostX > playerX)) {
+          ghostLeft()
+        } else if (path.includes(ghostIdx + width)) {
+          ghostDown()
+        } else if (path.includes(ghostIdx - width)) {
           ghostUp()
         }
       }
-      // fix x and y in case function
-      ghostBrainV1()
-      // ghostBrainV2()
-
-      console.log(ghostIdx, ghostX, ghostY)
-      cells[ghostIdx].classList.add('ghost')
-    }, 1000)
-    //only if next cell belong to path, do below:
-    function ghostBrainV2() {
-
-      if (path.includes((ghostIdx + 1) || (ghostIdx + width)) && ghostX < playerX && ghostY < playerY) {
-        // ghostX += 1 || ghostY += 1
-        ghostRight() || ghostDown()
-      } else if (path.includes((ghostIdx - 1) || (ghostIdx + width)) && ghostX > playerX && ghostY < playerY) {
-        // ghostX -= 1 || ghostY += 1
-        ghostLeft() || ghostDown()
-      } else if (path.includes((ghostIdx - 1) || (ghostIdx - width)) && ghostX > playerX && ghostY > playerY) {
-        // ghostX -= 1 || ghostY -= 1
-        ghostLeft() || ghostUp()
-      } else if (path.includes((ghostIdx + 1) || (ghostIdx + width)) && ghostX < playerX && ghostY > playerY) {
-        // ghostX += 1 || ghostY += 1
-        ghostRight() || ghostDown()
-      }
+      console.log(ghostPrevStep)
     }
+    setInterval(() => {
+      ghostBrainV6()
+      // console.log(ghostX, ghostY)
+    }, 500)
   }
-  // setTimeout(ghostRight(), 1000)
-  // if (path.includes(ghostIdx + 1)) {
-  //   ghostIdx += 1
-  // } else if (path.includes(ghostIdx - 1)) {
-  //   ghostIdx -= 1
-  // }
-
+  playerMovement()
   ghostMovement()
-  // setInterval(ghostRight, 1000)
-
 })
