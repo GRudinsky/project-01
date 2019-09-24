@@ -45,6 +45,16 @@ body {
 /* need to decide to stick un sizing units */
   background-size: 6vh;
   background-position-x: 1px;
+  z-index: 1;
+}
+.grid div.food {
+ background-image: url("../images/food.png");
+  background-repeat: no-repeat;
+  background-size: 1vh;
+  background-position-x: center;
+  background-position-y: center;
+  opacity: 0.5;
+  z-index: -2;
 }
 
 /* .grid div.player[data-direction="forward"] {
