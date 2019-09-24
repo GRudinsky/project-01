@@ -1,30 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+  // Defining array of cell indexes for the possible moving path
   const width = 20
   const grid = document.querySelector('.grid')
   const cells = []
 
-  let playerIdx = 378
-  playerLives = 0
-  let playerX
-  let playerY
-  function playerCoordinates() {
-    playerX = playerIdx % width
-    playerY = Math.floor(playerIdx / width)
-  }
-  playerCoordinates()
-
-  let foodRemoved
-  let ghostIdx = 189
-  let ghostPrevStep
-  let ghostX
-  let ghostY
-  function ghostCoordinates() {
-    ghostX = ghostIdx % width
-    ghostY = Math.floor(ghostIdx / width)
-  }
-  ghostCoordinates()
-
-  // Defining array of cell indexes for the possible moving path
   const path = [21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33, 34, 35, 36, 36, 37, 38, 41, 48, 51, 61, 81, 101, 121, 68, 71, 58, 78, 98, 88, 91, 82, 83,
     84, 85, 86, 87, 89, 90, 92, 93, 94, 95, 96, 97, 168, 168, 169, 170, 171, 44, 64, 104, 124, 144, 164, 184, 204, 224, 244, 264, 284, 304, 324, 321,
     322, 323, 341, 361, 362, 363, 364, 365, 366, 367, 368, 369, 368, 369, 370, 371, 372, 373, 374, 375, 376, 377, 378, 378, 358, 338, 337, 336, 335,
@@ -48,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // cell.addEventListener('click', handleClick)
     grid.appendChild(cell)
     cells.push(cell)
-    console.log(cells.indexOf)
+    // console.log(cells.indexOf)
 
     // Adding path class to grid elements if they are in path array
     if (path.includes(i)) {
@@ -62,21 +42,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Defining player
+  let playerIdx = 378
+  let playerLives = 0
+  let playerPoints = 0
+  let playerDead = false
+  let playerX
+  let playerY
+  function playerCoordinates() {
+    playerX = playerIdx % width
+    playerY = Math.floor(playerIdx / width)
+let highScore = document.querySelector('#high-score')
+highScore.innerHTML = playerPoints
+  }
+  playerCoordinates()
+  // const player = document.querySelector('.grid div.player')
   cells[playerIdx].classList.add('player')
-  const player = document.querySelector('.grid div.player')
 
   //Defining ghost
+  // Ghost variables to be put in object class
+  let foodClassRemoved
+  let ghostIdx = 189
+  let ghostPrevStep
+  let ghostX
+  let ghostY
+  function ghostCoordinates() {
+    ghostX = ghostIdx % width
+    ghostY = Math.floor(ghostIdx / width)
+  }
+  ghostCoordinates()
+
+
   cells[ghostIdx].classList.add('ghost')
   const ghost = document.querySelector('.grid div.ghost')
 
   // Player movement
+
   function playerMovement() {
     document.addEventListener('keyup', (e) => {
       cells[playerIdx].classList.remove('player')
-      cells[playerIdx].classList.remove('food')
+    
+
       switch (e.keyCode) {
         case 37: if (path.includes(playerIdx - 1)) {
           playerIdx -= 1
+          playerPoints
         } else if (playerX === 0) {
           playerIdx += width - 1
         }
@@ -95,9 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
           playerIdx += width
           break
       }
+      if (cells[playerIdx].classList.contains('food')) {
+        cells[playerIdx].classList.remove('food')
+        //This only updates inside the switch statetment- NEEDS FIX
+        playerPoints += 10
+      }
+
       playerCoordinates()
       cells[playerIdx].classList.remove('food')
       cells[playerIdx].classList.add('player')
+      console.log(playerPoints)
     })
   }
 
@@ -125,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function ghostBrainV6() {
       //Needs to be added only if it didn't have one before
-      
-      if (foodRemoved === true) {
+
+      if (foodClassRemoved === true) {
         cells[ghostIdx].classList.add('food')
       }
       cells[ghostIdx].classList.remove('ghost')
@@ -211,8 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (path.includes(ghostIdx + 1)) {
           ghostRight()
         }
-
-        //Ghost is left ort right on same Y axis
+        //Ghost is left or right on same Y axis
       } else if (ghostY === playerY && ghostX !== playerX) {
         if (path.includes(ghostIdx + 1) && (ghostX < playerX)) {
           ghostRight()
@@ -224,22 +239,24 @@ document.addEventListener('DOMContentLoaded', () => {
           ghostUp()
         }
       } else if (ghostX === playerX && ghostY === playerY) {
+        playerDead = true
         playerLives -= 1
         console.log(`Player lives left: ${playerLives}`)
       }
 
       // ghostCoordinates()
-      console.log(ghostPrevStep)
-   
+      // console.log(ghostPrevStep)
+
       if (cells[ghostIdx].classList.contains('food')) {
         cells[ghostIdx].classList.remove('food')
-        foodRemoved = true
+        foodClassRemoved = true
       } else {
-        foodRemoved = false
+        foodClassRemoved = false
       }
-      
+
       cells[ghostIdx].classList.add('ghost')
-      
+      console.log(playerDead)
+
     }
     setInterval(() => {
       ghostBrainV6()
