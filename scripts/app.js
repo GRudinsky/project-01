@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cell = document.createElement('DIV')
 
     // Cell numbering for development purposes only
-    cell.innerHTML = i
+    // cell.innerHTML = i
 
     // cell.addEventListener('click', handleClick)
     grid.appendChild(cell)
@@ -43,15 +43,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Defining player
   let playerIdx = 378
-  let playerLives = 0
+  let playerLives = 3
   let playerPoints = 0
   let playerDead = false
   let playerX
   let playerY
+  const livesLeft = document.querySelector('#lives-left')
+  livesLeft.innerHTML = playerLives
   function playerCoordinates() {
     playerX = playerIdx % width
     playerY = Math.floor(playerIdx / width)
-    let highScore = document.querySelector('#high-score')
+    const highScore = document.querySelector('#high-score')
     highScore.innerHTML = playerPoints
   }
   playerCoordinates()
@@ -63,44 +65,49 @@ document.addEventListener('DOMContentLoaded', () => {
   // Player move logic
 
   function playerMovement() {
+
+
     document.addEventListener('keyup', (e) => {
-      cells[playerIdx].classList.remove('player')
+      if (!playerDead) {
+        cells[playerIdx].classList.remove('player')
 
+        switch (e.keyCode) {
+          case 37: if (path.includes(playerIdx - 1)) {
+            playerIdx -= 1
+            playerPoints
+          } else if (playerX === 0) {
+            playerIdx += width - 1
+          }
+            break
+          case 38: if (path.includes(playerIdx - width))
+            playerIdx -= width
+            break
+          case 39: if (path.includes(playerIdx + 1)) {
+            playerIdx += 1
+          } else if (
+            playerX === width - 1) {
+            playerIdx -= width - 1
+          }
+            break
+          case 40: if (path.includes(playerIdx + width))
+            playerIdx += width
+            break
+        }
+        if (cells[playerIdx].classList.contains('food')) {
+          cells[playerIdx].classList.remove('food')
+          //This only updates inside the switch statetment- NEEDS FIX
+          playerPoints += 10
+        }
 
-      switch (e.keyCode) {
-        case 37: if (path.includes(playerIdx - 1)) {
-          playerIdx -= 1
-          playerPoints
-        } else if (playerX === 0) {
-          playerIdx += width - 1
-        }
-          break
-        case 38: if (path.includes(playerIdx - width))
-          playerIdx -= width
-          break
-        case 39: if (path.includes(playerIdx + 1)) {
-          playerIdx += 1
-        } else if (
-          playerX === width - 1) {
-          playerIdx -= width - 1
-        }
-          break
-        case 40: if (path.includes(playerIdx + width))
-          playerIdx += width
-          break
-      }
-      if (cells[playerIdx].classList.contains('food')) {
+        playerCoordinates()
         cells[playerIdx].classList.remove('food')
-        //This only updates inside the switch statetment- NEEDS FIX
-        playerPoints += 10
+        cells[playerIdx].classList.add('player')
+        // console.log(playerPoints)
       }
-
-      playerCoordinates()
-      cells[playerIdx].classList.remove('food')
-      cells[playerIdx].classList.add('player')
-      // console.log(playerPoints)
     })
   }
+  playerMovement()
+
   class Ghost {
     constructor(name, idx) {
       this.name = name
@@ -139,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (this.foodClassRemoved === true) {
         cells[this.idx].classList.add('food')
       }
-      console.log('this is', this)
       cells[this.idx].classList.remove('ghost')
       // ghostPrevStep = ghostIdx
 
@@ -228,39 +234,53 @@ document.addEventListener('DOMContentLoaded', () => {
           this.goRight()
         } else if (path.includes(this.idx - 1) && (this.x > playerX)) {
           this.goLeft()
-        } else if (path.includes(this.idx  + width)) {
+        } else if (path.includes(this.idx + width)) {
           this.goDown()
-        } else if (path.includes(this.idx  - width)) {
+        } else if (path.includes(this.idx - width)) {
           this.goUp()
         }
       } else if (this.x === playerX && this.y === playerY) {
-        playerDead = true
         playerLives -= 1
-        console.log(`Player lives left: ${playerLives}`)
+        livesLeft.innerHTML = playerLives
+        playerDead = true
+        gameOver()
+        // console.log(`player died? ${playerDead}`)
+        console.log(playerLives)
       }
 
       // ghostCoordinates()
       // console.log(ghostPrevStep)
-      console.log(this.idx)
+      // console.log(this.idx)
       if (cells[this.idx].classList.contains('food')) {
-       
+
         cells[this.idx].classList.remove('food')
         this.foodClassRemoved = true
       } else {
         this.foodClassRemoved = false
       }
       cells[this.idx].classList.add('ghost')
-      // console.log(playerDead)
     }
 
     move() {
-      console.log('first move, this is', this)
       cells[this.idx].classList.add('ghost')
       setInterval(() => {
-        this.brain()
+        if (!playerDead) {
+          this.brain()
+        }
       }, 500)
     }
   }
+  function gameOver() {
+    if (playerDead) {
+      console.log('GAME OVER')
+      const gameOverScreen = document.createElement('DIV')
+      gameOverScreen.textContent = 'GAME OVER!'
+      gameOverScreen.classList.add('game-over')
+      document.body.appendChild(gameOverScreen)
+    }
+  }
+  
+
   const pinky = new Ghost('pinky', 227)
   const winky = new Ghost('winky', 232)
   const stinky = new Ghost('stinky', 167)
@@ -270,172 +290,171 @@ document.addEventListener('DOMContentLoaded', () => {
   winky.move()
   stinky.move()
   blinky.move()
-
-
-
-  //Defining ghost without Object
-  // Ghost variables to be put in object class
-  let foodClassRemoved
-  let ghostIdx = 189
-  let ghostPrevStep
-  let ghostX
-  let ghostY
-  function ghostCoordinates() {
-    ghostX = ghostIdx % width
-    ghostY = Math.floor(ghostIdx / width)
-  }
-  ghostCoordinates()
-
-
-  // const ghost = document.querySelector('.grid div.ghost')
-  // Ghost movement
-  function ghostMovement() {
-    cells[ghostIdx].classList.add('ghost')
-    function ghostRight() {
-      ghostPrevStep = ghostIdx
-      ghostIdx += 1
-      ghostCoordinates()
-    }
-    function ghostDown() {
-      ghostPrevStep = ghostIdx
-      ghostIdx += width
-      ghostCoordinates()
-    }
-    function ghostLeft() {
-      ghostPrevStep = ghostIdx
-      ghostIdx -= 1
-      ghostCoordinates()
-    }
-    function ghostUp() {
-      ghostPrevStep = ghostIdx
-      ghostIdx -= width
-      ghostCoordinates()
-    }
-    function ghostBrainV6() {
-      //Needs to be added only if it didn't have one before
-
-      if (foodClassRemoved === true) {
-        cells[ghostIdx].classList.add('food')
-      }
-      cells[ghostIdx].classList.remove('ghost')
-      // ghostPrevStep = ghostIdx
-
-      if (ghostX === 0) {
-        ghostPrevStep = ghostIdx
-        ghostIdx += width - 2
-        cells[ghostIdx].classList.add('ghost')
-        ghostCoordinates()
-
-        //if ghost is HIGH LEFT
-      } else if (ghostX === width - 1) {
-        ghostPrevStep = ghostIdx
-        ghostIdx -= width - 2
-        // cells[ghostIdx].classList.add('ghost')
-        ghostCoordinates()
-        //if ghost is HIGH LEFT
-      } else if (ghostX < playerX && ghostY < playerY) {
-        // console.log('HIGH LEFT')
-        if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-          ghostDown()
-        } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-          ghostRight()
-        } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-          ghostLeft()
-        } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-          ghostUp()
-        } else {
-          console.log('return')
-          return
-        }
-        //if ghost is HIGH RIGHT
-      } else if (ghostX > playerX && ghostY < playerY) {
-        // console.log('HIGHT RIGHT')
-        if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-          ghostLeft()
-        } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-          ghostDown()
-        } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-          ghostUp()
-        } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-          ghostRight()
-        } else {
-          return
-        }
-        // ghost is BOTTOM RIGHT
-      } else if (ghostX > playerX && ghostY > playerY) {
-        // console.log('BOTTOM RIGHT')
-        if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-          ghostUp()
-        } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-          ghostLeft()
-        } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-          ghostDown()
-        } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-          ghostRight()
-        } else {
-          return
-        }
-        // ghost is BOTTOM LEFT
-      } else if (ghostX < playerX && ghostY > playerY) {
-        if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-          ghostRight()
-        } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-          ghostUp()
-        } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-          ghostDown()
-        } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-          ghostLeft()
-        } else {
-          return
-        }
-        //Ghost higher or lower on same X axis
-      } else if (ghostX === playerX && ghostY !== playerY) {
-        if (path.includes(ghostIdx - width) && (ghostY > playerY)) {
-          ghostUp()
-        } else if (path.includes(ghostIdx + width) && (ghostY < playerY)) {
-          ghostDown()
-        } else if (path.includes(ghostIdx - 1)) {
-          ghostLeft()
-        } else if (path.includes(ghostIdx + 1)) {
-          ghostRight()
-        }
-        //Ghost is left or right on same Y axis
-      } else if (ghostY === playerY && ghostX !== playerX) {
-        if (path.includes(ghostIdx + 1) && (ghostX < playerX)) {
-          ghostRight()
-        } else if (path.includes(ghostIdx - 1) && (ghostX > playerX)) {
-          ghostLeft()
-        } else if (path.includes(ghostIdx + width)) {
-          ghostDown()
-        } else if (path.includes(ghostIdx - width)) {
-          ghostUp()
-        }
-      } else if (ghostX === playerX && ghostY === playerY) {
-        playerDead = true
-        playerLives -= 1
-        // console.log(`Player lives left: ${playerLives}`)
-      }
-
-      // ghostCoordinates()
-      // console.log(ghostPrevStep)
-
-      if (cells[ghostIdx].classList.contains('food')) {
-        cells[ghostIdx].classList.remove('food')
-        foodClassRemoved = true
-      } else {
-        foodClassRemoved = false
-      }
-
-      cells[ghostIdx].classList.add('ghost')
-      // console.log(playerDead)
-
-    }
-    setInterval(() => {
-      ghostBrainV6()
-      // console.log(ghostX, ghostY)
-    }, 500)
-  }
-  playerMovement()
-  // ghostMovement()
-  // pinky.move()
 })
+
+
+// //Defining ghost without Object
+// // Ghost variables to be put in object class
+// let foodClassRemoved
+// let ghostIdx = 189
+// let ghostPrevStep
+// let ghostX
+// let ghostY
+// function ghostCoordinates() {
+//   ghostX = ghostIdx % width
+//   ghostY = Math.floor(ghostIdx / width)
+// }
+// ghostCoordinates()
+
+
+// // const ghost = document.querySelector('.grid div.ghost')
+// // Ghost movement
+// function ghostMovement() {
+//   cells[ghostIdx].classList.add('ghost')
+//   function ghostRight() {
+//     ghostPrevStep = ghostIdx
+//     ghostIdx += 1
+//     ghostCoordinates()
+//   }
+//   function ghostDown() {
+//     ghostPrevStep = ghostIdx
+//     ghostIdx += width
+//     ghostCoordinates()
+//   }
+//   function ghostLeft() {
+//     ghostPrevStep = ghostIdx
+//     ghostIdx -= 1
+//     ghostCoordinates()
+//   }
+//   function ghostUp() {
+//     ghostPrevStep = ghostIdx
+//     ghostIdx -= width
+//     ghostCoordinates()
+//   }
+//   function ghostBrainV6() {
+//     //Needs to be added only if it didn't have one before
+
+//     if (foodClassRemoved === true) {
+//       cells[ghostIdx].classList.add('food')
+//     }
+//     cells[ghostIdx].classList.remove('ghost')
+//     // ghostPrevStep = ghostIdx
+
+//     if (ghostX === 0) {
+//       ghostPrevStep = ghostIdx
+//       ghostIdx += width - 2
+//       cells[ghostIdx].classList.add('ghost')
+//       ghostCoordinates()
+
+//       //if ghost is HIGH LEFT
+//     } else if (ghostX === width - 1) {
+//       ghostPrevStep = ghostIdx
+//       ghostIdx -= width - 2
+//       // cells[ghostIdx].classList.add('ghost')
+//       ghostCoordinates()
+//       //if ghost is HIGH LEFT
+//     } else if (ghostX < playerX && ghostY < playerY) {
+//       // console.log('HIGH LEFT')
+//       if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+//         ghostDown()
+//       } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+//         ghostRight()
+//       } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+//         ghostLeft()
+//       } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+//         ghostUp()
+//       } else {
+//         console.log('return')
+//         return
+//       }
+//       //if ghost is HIGH RIGHT
+//     } else if (ghostX > playerX && ghostY < playerY) {
+//       // console.log('HIGHT RIGHT')
+//       if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+//         ghostLeft()
+//       } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+//         ghostDown()
+//       } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+//         ghostUp()
+//       } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+//         ghostRight()
+//       } else {
+//         return
+//       }
+//       // ghost is BOTTOM RIGHT
+//     } else if (ghostX > playerX && ghostY > playerY) {
+//       // console.log('BOTTOM RIGHT')
+//       if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+//         ghostUp()
+//       } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+//         ghostLeft()
+//       } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+//         ghostDown()
+//       } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+//         ghostRight()
+//       } else {
+//         return
+//       }
+//       // ghost is BOTTOM LEFT
+//     } else if (ghostX < playerX && ghostY > playerY) {
+//       if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
+//         ghostRight()
+//       } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
+//         ghostUp()
+//       } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
+//         ghostDown()
+//       } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
+//         ghostLeft()
+//       } else {
+//         return
+//       }
+//       //Ghost higher or lower on same X axis
+//     } else if (ghostX === playerX && ghostY !== playerY) {
+//       if (path.includes(ghostIdx - width) && (ghostY > playerY)) {
+//         ghostUp()
+//       } else if (path.includes(ghostIdx + width) && (ghostY < playerY)) {
+//         ghostDown()
+//       } else if (path.includes(ghostIdx - 1)) {
+//         ghostLeft()
+//       } else if (path.includes(ghostIdx + 1)) {
+//         ghostRight()
+//       }
+//       //Ghost is left or right on same Y axis
+//     } else if (ghostY === playerY && ghostX !== playerX) {
+//       if (path.includes(ghostIdx + 1) && (ghostX < playerX)) {
+//         ghostRight()
+//       } else if (path.includes(ghostIdx - 1) && (ghostX > playerX)) {
+//         ghostLeft()
+//       } else if (path.includes(ghostIdx + width)) {
+//         ghostDown()
+//       } else if (path.includes(ghostIdx - width)) {
+//         ghostUp()
+//       }
+//     } else if (ghostX === playerX && ghostY === playerY) {
+//       playerDead = true
+//       playerLives -= 1
+//       // console.log(`Player lives left: ${playerLives}`)
+//     }
+
+//     // ghostCoordinates()
+//     // console.log(ghostPrevStep)
+
+//     if (cells[ghostIdx].classList.contains('food')) {
+//       cells[ghostIdx].classList.remove('food')
+//       foodClassRemoved = true
+//     } else {
+//       foodClassRemoved = false
+//     }
+
+//     cells[ghostIdx].classList.add('ghost')
+//     // console.log(playerDead)
+
+//   }
+//   setInterval(() => {
+//     ghostBrainV6()
+//     // console.log(ghostX, ghostY)
+//   }, 500)
+// }
+
+// ghostMovement()
+
