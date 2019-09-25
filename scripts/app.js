@@ -1,3 +1,4 @@
+//Sterady move - translate x or y depending on direction and add/remove class once 75%
 document.addEventListener('DOMContentLoaded', () => {
 
   // Defining array of cell indexes for the possible moving path
@@ -64,58 +65,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Player move logic
 
-  function playerMovement() {
-
-
-    document.addEventListener('keyup', (e) => {
-      if (!playerDead) {
-        cells[playerIdx].classList.remove('player')
-
-        switch (e.keyCode) {
-          case 37: if (path.includes(playerIdx - 1)) {
-            playerIdx -= 1
-            playerPoints
-          } else if (playerX === 0) {
-            playerIdx += width - 1
+  function playerMove() {
+    const playerId = setInterval(() => {
+      clearInterval(playerId)
+      document.addEventListener('keyup', (e) => {
+        if (playerLives > 0) {
+          cells[playerIdx].classList.remove('player')
+          switch (e.keyCode) {
+            case 37:
+              if (path.includes(playerIdx - 1)) {
+                playerIdx -= 1
+                playerPoints
+              } else if (playerX === 0) {
+                playerIdx += width - 1
+              }
+              break
+            case 38:
+              if (path.includes(playerIdx - width))
+                playerIdx -= width
+              break
+            case 39:
+              if (path.includes(playerIdx + 1)) {
+                playerIdx += 1
+              } else if (
+                playerX === width - 1) {
+                playerIdx -= width - 1
+              }
+              break
+            case 40:
+              if (path.includes(playerIdx + width))
+                playerIdx += width
+              break
           }
-            break
-          case 38: if (path.includes(playerIdx - width))
-            playerIdx -= width
-            break
-          case 39: if (path.includes(playerIdx + 1)) {
-            playerIdx += 1
-          } else if (
-            playerX === width - 1) {
-            playerIdx -= width - 1
+          if (cells[playerIdx].classList.contains('food')) {
+            cells[playerIdx].classList.remove('food')
+            //This only updates inside the switch statetment- NEEDS FIX
+            playerPoints += 10
           }
-            break
-          case 40: if (path.includes(playerIdx + width))
-            playerIdx += width
-            break
-        }
-        if (cells[playerIdx].classList.contains('food')) {
+
+          playerCoordinates()
           cells[playerIdx].classList.remove('food')
-          //This only updates inside the switch statetment- NEEDS FIX
-          playerPoints += 10
+          cells[playerIdx].classList.add('player')
+          // console.log(playerPoints)
+          // clearInterval(playerId)
         }
 
-        playerCoordinates()
-        cells[playerIdx].classList.remove('food')
-        cells[playerIdx].classList.add('player')
-        // console.log(playerPoints)
-      }
-    })
+      })
+    }, 300)
   }
-  playerMovement()
+  playerMove()
 
   class Ghost {
-    constructor(name, idx) {
+    constructor(name, initialIdx) {
       this.name = name
-      this.idx = idx
+      this.initialIdx = initialIdx
+      this.idx = this.initialIdx
       this.foodClassRemoved = null
       this.prevStep = this.idx
       this.x = this.idx % width
       this.y = Math.floor(this.idx / width)
+      this.timer = 250
       // this.move()
     }
     ghostCoords() {
@@ -124,108 +133,110 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     goRight() {
       this.prevStep = this.idx
+      // cells[this.idx].id = 'transition-right'
       this.idx += 1
       this.ghostCoords()
     }
     goDown() {
       this.prevStep = this.idx
+      // cells[this.idx].id = 'transition-down'
       this.idx += width
       this.ghostCoords()
     }
     goLeft() {
       this.prevStep = this.idx
+      // cells[this.idx].id = 'transition-left'
       this.idx -= 1
       this.ghostCoords()
     }
     goUp() {
       this.prevStep = this.idx
+      // cells[this.idx].id = 'transition-up'
       this.idx -= width
       this.ghostCoords()
     }
     brain() {
+      // console.log(this.name, playerDead, playerLives)
       if (this.foodClassRemoved === true) {
         cells[this.idx].classList.add('food')
       }
       cells[this.idx].classList.remove('ghost')
+      cells[this.idx].classList.remove('transition')
+      cells[this.idx].id = 'no-id'
+
       // ghostPrevStep = ghostIdx
+      
+      const randomRoute = Math.floor(Math.random() * 2)
+      // console.log(randomRoute, this.name)
 
       if (this.x === 0) {
         console.log(this.x)
         this.prevStep = this.idx
         this.idx += width - 2
-        cells[this.x].classList.add('ghost')
         this.ghostCoords()
 
-        //if ghost is HIGH LEFT
+        //if ghost is on Last column on the right
       } else if (this.x === width - 1) {
         this.prevStep = this.idx
-        this.x -= width - 2
+        this.idx -= width - 2
         this.ghostCoords()
         //if ghost is HIGH LEFT
       } else if (this.x < playerX && this.y < playerY) {
         // console.log('HIGH LEFT')
-        if (path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
+        if (randomRoute === 0 && path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
           this.goDown()
-        } else if (path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
+        } else if (randomRoute === 1 && path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
           this.goRight()
-        } else if (path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
+        } else if (randomRoute === 0 && path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
           this.goLeft()
-        } else if (path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
+        } else if (randomRoute === 1 && path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
           this.goUp()
-        } else {
-          console.log('return')
-          return
         }
         //if ghost is HIGH RIGHT
       } else if (this.x > playerX && this.y < playerY) {
-        // console.log('HIGHT RIGHT')
-        if (path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
+        if (randomRoute === 0 && path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
           this.goLeft()
-        } else if (path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
+        } else if (randomRoute === 1 && path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
           this.goDown()
-        } else if (path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
+        } else if (randomRoute === 0 && path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
           this.goUp()
-        } else if (path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
+        } else if (randomRoute === 1 && path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
           this.goRight()
-        } else {
-          return
         }
         // ghost is BOTTOM RIGHT
       } else if (this.x > playerX && this.y > playerY) {
         // console.log('BOTTOM RIGHT')
-        if (path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
+        if (randomRoute === 0 && path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
           this.goUp()
-        } else if (path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
+        } else if (randomRoute === 1 && path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
           this.goLeft()
-        } else if (path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
+        } else if (randomRoute === 0 && path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
           this.goDown()
-        } else if (path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
+        } else if (randomRoute === 1 && path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
           this.goRight()
         } else {
           return
         }
         // ghost is BOTTOM LEFT
       } else if (this.x < playerX && this.y > playerY) {
-        if (path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
+        if (randomRoute === 0 && path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
           this.goRight()
-        } else if (path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
+        } else if (randomRoute === 1 && path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
           this.goUp()
-        } else if (path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
+        } else if (randomRoute === 0 && path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
           this.goDown()
-        } else if (path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
+        } else if (randomRoute === 0 && path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
           this.goLeft()
-        } else {
-          return
-        }
+        } 
         //Ghost higher or lower on same X axis
       } else if (this.x === playerX && this.y !== playerY) {
         if (path.includes(this.idx - width) && (this.y > playerY)) {
           this.goUp()
         } else if (path.includes(this.idx + width) && (this.y < playerY)) {
           this.goDown()
-        } else if (path.includes(this.idx - 1)) {
+        } else if (randomRoute === 0 && path.includes(this.idx - 1)) {
           this.goLeft()
-        } else if (path.includes(this.idx + 1)) {
+        } else if (randomRoute === 1 && path.includes(this.idx + 1)) {
           this.goRight()
         }
         //Ghost is left or right on same Y axis
@@ -234,25 +245,18 @@ document.addEventListener('DOMContentLoaded', () => {
           this.goRight()
         } else if (path.includes(this.idx - 1) && (this.x > playerX)) {
           this.goLeft()
-        } else if (path.includes(this.idx + width)) {
+        } else if (randomRoute === 0 && path.includes(this.idx + width)) {
           this.goDown()
-        } else if (path.includes(this.idx - width)) {
+        } else if (randomRoute === 1 && path.includes(this.idx - width)) {
           this.goUp()
         }
       } else if (this.x === playerX && this.y === playerY) {
         playerLives -= 1
         livesLeft.innerHTML = playerLives
-        playerDead = true
-        gameOver()
-        // console.log(`player died? ${playerDead}`)
-        console.log(playerLives)
+        playerDead = true   
       }
 
-      // ghostCoordinates()
-      // console.log(ghostPrevStep)
-      // console.log(this.idx)
       if (cells[this.idx].classList.contains('food')) {
-
         cells[this.idx].classList.remove('food')
         this.foodClassRemoved = true
       } else {
@@ -262,199 +266,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     move() {
-      cells[this.idx].classList.add('ghost')
-      setInterval(() => {
-        if (!playerDead) {
+      // cells[this.idx].classList.add('ghost')
+      if (playerLives > 0) {
+
+        this.id = setInterval(() => {
           this.brain()
-        }
-      }, 500)
+          if (playerDead === true) {
+            console.log(`clearing interval of: ${this.name}`)
+            // clearInterval(this.id)
+            clearInterval(this.id)
+            playerDead = false
+            cells[this.idx].classList.remove('ghost')
+            this.idx = this.initialIdx
+            this.move()
+          }
+        }, this.timer)
+      } else {
+        gameOver()
+      }
     }
   }
   function gameOver() {
-    if (playerDead) {
-      console.log('GAME OVER')
-      const gameOverScreen = document.createElement('DIV')
-      gameOverScreen.textContent = 'GAME OVER!'
-      gameOverScreen.classList.add('game-over')
-      document.body.appendChild(gameOverScreen)
-    }
+    clearInterval(pinky.id)
+    clearInterval(winky.id)
+    clearInterval(stinky.id)
+    clearInterval(blinky.id)
+
+    const gameOverScreen = document.createElement('DIV')
+    gameOverScreen.textContent = 'GAME OVER!'
+    gameOverScreen.classList.add('game-over')
+    document.body.appendChild(gameOverScreen)
   }
-  
+
 
   const pinky = new Ghost('pinky', 227)
   const winky = new Ghost('winky', 232)
   const stinky = new Ghost('stinky', 167)
   const blinky = new Ghost('blinky', 172)
 
+  playerPoints
   pinky.move()
   winky.move()
-  stinky.move()
   blinky.move()
+  stinky.move()
+
 })
-
-
-// //Defining ghost without Object
-// // Ghost variables to be put in object class
-// let foodClassRemoved
-// let ghostIdx = 189
-// let ghostPrevStep
-// let ghostX
-// let ghostY
-// function ghostCoordinates() {
-//   ghostX = ghostIdx % width
-//   ghostY = Math.floor(ghostIdx / width)
-// }
-// ghostCoordinates()
-
-
-// // const ghost = document.querySelector('.grid div.ghost')
-// // Ghost movement
-// function ghostMovement() {
-//   cells[ghostIdx].classList.add('ghost')
-//   function ghostRight() {
-//     ghostPrevStep = ghostIdx
-//     ghostIdx += 1
-//     ghostCoordinates()
-//   }
-//   function ghostDown() {
-//     ghostPrevStep = ghostIdx
-//     ghostIdx += width
-//     ghostCoordinates()
-//   }
-//   function ghostLeft() {
-//     ghostPrevStep = ghostIdx
-//     ghostIdx -= 1
-//     ghostCoordinates()
-//   }
-//   function ghostUp() {
-//     ghostPrevStep = ghostIdx
-//     ghostIdx -= width
-//     ghostCoordinates()
-//   }
-//   function ghostBrainV6() {
-//     //Needs to be added only if it didn't have one before
-
-//     if (foodClassRemoved === true) {
-//       cells[ghostIdx].classList.add('food')
-//     }
-//     cells[ghostIdx].classList.remove('ghost')
-//     // ghostPrevStep = ghostIdx
-
-//     if (ghostX === 0) {
-//       ghostPrevStep = ghostIdx
-//       ghostIdx += width - 2
-//       cells[ghostIdx].classList.add('ghost')
-//       ghostCoordinates()
-
-//       //if ghost is HIGH LEFT
-//     } else if (ghostX === width - 1) {
-//       ghostPrevStep = ghostIdx
-//       ghostIdx -= width - 2
-//       // cells[ghostIdx].classList.add('ghost')
-//       ghostCoordinates()
-//       //if ghost is HIGH LEFT
-//     } else if (ghostX < playerX && ghostY < playerY) {
-//       // console.log('HIGH LEFT')
-//       if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-//         ghostDown()
-//       } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-//         ghostRight()
-//       } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-//         ghostLeft()
-//       } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-//         ghostUp()
-//       } else {
-//         console.log('return')
-//         return
-//       }
-//       //if ghost is HIGH RIGHT
-//     } else if (ghostX > playerX && ghostY < playerY) {
-//       // console.log('HIGHT RIGHT')
-//       if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-//         ghostLeft()
-//       } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-//         ghostDown()
-//       } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-//         ghostUp()
-//       } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-//         ghostRight()
-//       } else {
-//         return
-//       }
-//       // ghost is BOTTOM RIGHT
-//     } else if (ghostX > playerX && ghostY > playerY) {
-//       // console.log('BOTTOM RIGHT')
-//       if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-//         ghostUp()
-//       } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-//         ghostLeft()
-//       } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-//         ghostDown()
-//       } else if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-//         ghostRight()
-//       } else {
-//         return
-//       }
-//       // ghost is BOTTOM LEFT
-//     } else if (ghostX < playerX && ghostY > playerY) {
-//       if (path.includes(ghostIdx + 1) && (ghostPrevStep !== (ghostIdx + 1))) {
-//         ghostRight()
-//       } else if (path.includes(ghostIdx - width) && (ghostPrevStep !== (ghostIdx - width))) {
-//         ghostUp()
-//       } else if (path.includes(ghostIdx + width) && (ghostPrevStep !== (ghostIdx + width))) {
-//         ghostDown()
-//       } else if (path.includes(ghostIdx - 1) && (ghostPrevStep !== (ghostIdx - 1))) {
-//         ghostLeft()
-//       } else {
-//         return
-//       }
-//       //Ghost higher or lower on same X axis
-//     } else if (ghostX === playerX && ghostY !== playerY) {
-//       if (path.includes(ghostIdx - width) && (ghostY > playerY)) {
-//         ghostUp()
-//       } else if (path.includes(ghostIdx + width) && (ghostY < playerY)) {
-//         ghostDown()
-//       } else if (path.includes(ghostIdx - 1)) {
-//         ghostLeft()
-//       } else if (path.includes(ghostIdx + 1)) {
-//         ghostRight()
-//       }
-//       //Ghost is left or right on same Y axis
-//     } else if (ghostY === playerY && ghostX !== playerX) {
-//       if (path.includes(ghostIdx + 1) && (ghostX < playerX)) {
-//         ghostRight()
-//       } else if (path.includes(ghostIdx - 1) && (ghostX > playerX)) {
-//         ghostLeft()
-//       } else if (path.includes(ghostIdx + width)) {
-//         ghostDown()
-//       } else if (path.includes(ghostIdx - width)) {
-//         ghostUp()
-//       }
-//     } else if (ghostX === playerX && ghostY === playerY) {
-//       playerDead = true
-//       playerLives -= 1
-//       // console.log(`Player lives left: ${playerLives}`)
-//     }
-
-//     // ghostCoordinates()
-//     // console.log(ghostPrevStep)
-
-//     if (cells[ghostIdx].classList.contains('food')) {
-//       cells[ghostIdx].classList.remove('food')
-//       foodClassRemoved = true
-//     } else {
-//       foodClassRemoved = false
-//     }
-
-//     cells[ghostIdx].classList.add('ghost')
-//     // console.log(playerDead)
-
-//   }
-//   setInterval(() => {
-//     ghostBrainV6()
-//     // console.log(ghostX, ghostY)
-//   }, 500)
-// }
-
-// ghostMovement()
-

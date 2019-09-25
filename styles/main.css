@@ -56,10 +56,31 @@ body {
 }
 .grid div.ghost {
   background-image: url("../images/ghosts.jpeg");
-/* need to decide to stick un sizing units */
   background-size: 6vh;
   background-position-x: 1px;
-  z-index: 1;
+  background-position-x: 1px;
+}
+#transition-left {
+transform: translateX(-25px);
+transition: 1200ms
+}
+#transition-right {
+transform: translateX(25px);
+transition: 1200ms
+}
+#transition-up {
+transform: translateY(-25px);
+transition: 1200ms
+}
+#transition-down {
+transform: translateY(25px);
+transition: 1200ms
+}
+#blue {
+  background-position-x: 21px;
+}
+#orange {
+  background-position-x: 1px;
 }
 .grid div.food {
  background-image: url("../images/food.png");
@@ -92,7 +113,7 @@ body {
 
 .grid div.player[data-direction="backward"] {
   transform: scaleX(-1)
-} */
+}  */
 
 /* .grid div.player[data-step="0"] {
   background-position-x: 1080px;
@@ -122,4 +143,4 @@ body {
 .grid div.player.surprise {
   background-position-x: 120px;
   background-position-y: -120px;
-} */
+}
