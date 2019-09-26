@@ -89,7 +89,13 @@ transition: 1200ms
   background-position-x: center;
   background-position-y: center;
   opacity: 0.5;
-  z-index: -2;
+}
+.grid div.pill {
+  background-image:url("../images/pill1.png");
+  background-repeat: no-repeat;
+  background-size: 2.5vh;
+  background-position-x: center;
+  background-position-y: center;
 }
 .game-over {
   position: absolute;
