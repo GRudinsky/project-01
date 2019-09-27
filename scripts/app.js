@@ -1,4 +1,3 @@
-//Sterady move - translate x or y depending on direction and add/remove class once 75%
 document.addEventListener('DOMContentLoaded', () => {
 
   // Defining array of cell indexes for the possible moving path
@@ -45,11 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Defining player
+  // Defining player - related variables
+  let playerDead = false
+  let playerOnPill = false
   let playerIdx = 89
   let playerLives = 3
   let playerPoints = 0
-  let playerDead = false
+  let pointsPerGhostOnPill = 400
   let playerX
   let playerY
   const livesLeft = document.querySelector('#lives-left')
@@ -75,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         case 37:
           if (path.includes(playerIdx - 1)) {
             playerIdx -= 1
-            playerPoints
+            // playerPoints
           } else if (playerX === 0) {
             playerIdx += width - 1
           }
@@ -102,14 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
         playerPoints += 10
       } else if (cells[playerIdx].classList.contains('pill')) {
         cells[playerIdx].classList.remove('pill')
-        playerPoints += 100
-        playerPillMode()
+        playerPoints += 10
+        playerOnPillMode()
       }
       playerCoordinates()
       cells[playerIdx].classList.add('player')
     })
   }
-
   playerMove()
 
   class Ghost {
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.x = this.idx % width
       this.y = Math.floor(this.idx / width)
       this.timer = 250
-      // this.move()
+      
     }
     ghostCoords() {
       this.x = this.idx % width
@@ -154,15 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     brain() {
       // console.log(this.name, playerDead, playerLives)
-      if (this.foodClassRemoved === true) {
+      if (this.foodClassRemoved) {
         cells[this.idx].classList.add('food')
       }
       cells[this.idx].classList.remove('ghost')
-      cells[this.idx].classList.remove('transition')
-      cells[this.idx].id = 'no-id'
-
       // ghostPrevStep = ghostIdx
-
       const randomRoute = Math.floor(Math.random() * 2)
       // console.log(randomRoute, this.name)
 
@@ -247,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (path.includes(this.idx - width)) {
           this.goUp()
         }
-      } else if (this.x === playerX && this.y === playerY) {
+      } else if (this.idx === playerIdx && !playerOnPill) {
         playerLives -= 1
         livesLeft.innerHTML = playerLives
         playerDead = true
@@ -261,17 +257,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       cells[this.idx].classList.add('ghost')
     }
+    // Ghost move function
 
     move() {
+      cells[this.idx].classList.remove('ghost-on-pill')
       // cells[this.idx].classList.add('ghost')
       if (playerLives > 0) {
-
         this.id = setInterval(() => {
           this.brain()
           if (playerDead === true) {
             clearInterval(this.id)
-            playerDead = false
             cells[this.idx].classList.remove('ghost')
+            playerDead = false
             this.idx = this.initialIdx
             this.move()
           }
@@ -280,6 +277,50 @@ document.addEventListener('DOMContentLoaded', () => {
         gameOver()
       }
     }
+
+    ghostOnPill() {
+      cells[this.idx].classList.remove('ghost')
+      const ghostOnPillId = setInterval(() => {
+        if (playerOnPill) {
+          if (this.foodClassRemoved) {
+            cells[this.idx].classList.add('food')
+          }
+          cells[this.idx].classList.remove('ghost-on-pill')
+          if (path.includes(this.idx + 1) && (this.prevStep !== (this.idx + 1))) {
+            this.goRight()
+          } else if (path.includes(this.idx - width) && (this.prevStep !== (this.idx - width))) {
+            this.goUp()
+          } else if (path.includes(this.idx + width) && (this.prevStep !== (this.idx + width))) {
+            this.goDown()
+          } else if (path.includes(this.idx - 1) && (this.prevStep !== (this.idx - 1))) {
+            this.goLeft()
+          }
+          if (this.idx === playerIdx && playerOnPill) {
+            console.log(pointsPerGhostOnPill)
+            pointsPerGhostOnPill += 200
+            playerPoints += pointsPerGhostOnPill
+            cells[this.idx].classList.remove('ghost-on-pill')
+            this.idx = this.initialIdx
+            this.ghostCoords()
+          }
+          if (cells[this.idx].classList.contains('food')) {
+            cells[this.idx].classList.remove('food')
+            this.foodClassRemoved = true
+          } else {
+            this.foodClassRemoved = false
+          }
+          cells[this.idx].classList.add('ghost-on-pill')
+        } else {
+         
+          console.log(`${this.name} removing pill`)
+          cells[this.idx].classList.remove('ghost-on-pill')
+          cells[this.idx].classList.add('ghost')
+          // this.ghostCoords()
+          clearInterval(ghostOnPillId)
+        }
+      }, 500)
+    }
+
   }
   //GHOST object class ends
   function clearIntervalAll() {
@@ -297,21 +338,29 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(gameOverScreen)
   }
 
-  function playerPillMode() {
+  function playerOnPillMode() {
     // duration of pill mode set as a value of pillModeTimer variable
     clearIntervalAll()
+    playerOnPill = true
+
+    pointsPerGhostOnPill = 200
+    firstGhost.ghostOnPill()
+    secondGhost.ghostOnPill()
+    thirdGhost.ghostOnPill()
+    fourthGhost.ghostOnPill()
+    // document.getElementsByClassName('ghost').style.backgroundImage = 'url("./images/scaredghost.png")'
     let pillModeTimer = 6
     const pillTimerId = setInterval(() => {
+      // document.querySelectorAll('.ghost').style.backgroundImage = 'url("./images/scaredghost.png")'
       pillModeTimer -= 1
       console.log(pillModeTimer)
       if (pillModeTimer === 0) {
+        playerOnPill = false
         clearInterval(pillTimerId)
         deployGhosts()
       }
     }, 1000)
-    if (pillModeTimer === 0) {
-      console.log('exiting')
-    }
+
   }
 
   const firstGhost = new Ghost('pinky', 227)
@@ -319,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const thirdGhost = new Ghost('stinky', 167)
   const fourthGhost = new Ghost('blinky', 172)
 
-  playerPoints
+  // playerPoints
   function deployGhosts() {
     firstGhost.move()
     secondGhost.move()
@@ -327,5 +376,4 @@ document.addEventListener('DOMContentLoaded', () => {
     fourthGhost.move()
   }
   deployGhosts()
-
 })

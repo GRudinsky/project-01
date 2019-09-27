@@ -55,32 +55,17 @@ body {
   background-size: cover;
 }
 .grid div.ghost {
-  background-image: url("../images/ghosts.jpeg");
-  background-size: 6vh;
-  background-position-x: 1px;
-  background-position-x: 1px;
+  background-image: url("../images/ghost.png");
+  background-size: 20px;
+  /* background-position-x: 1px;
+  background-position-x: 1px; */
 }
-#transition-left {
-transform: translateX(-25px);
-transition: 1200ms
-}
-#transition-right {
-transform: translateX(25px);
-transition: 1200ms
-}
-#transition-up {
-transform: translateY(-25px);
-transition: 1200ms
-}
-#transition-down {
-transform: translateY(25px);
-transition: 1200ms
+.grid div.ghost-on-pill {
+background-image: url("../images/scaredghost.png");
+  background-size: 20px;
 }
 #blue {
-  background-position-x: 21px;
-}
-#orange {
-  background-position-x: 1px;
+  background-image: url("../images/ghost.png");
 }
 .grid div.food {
  background-image: url("../images/food.png");
