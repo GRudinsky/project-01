@@ -1,4 +1,4 @@
-
+![ga_logo](https://user-images.githubusercontent.com/38439393/70393846-99b26800-19e6-11ea-82a0-35c1b5738321.png)
 # Project 1: Pacman
 
 ## Overview 
@@ -18,6 +18,10 @@ The biggest challenge in development of this game for me was the logic which mov
 * CSS3
 * JavaScript
 * Git/GitHub
+
+## Deployment
+
+Game is deployed and can be played on [GitHub Pages](https://grudinsky.github.io/project-pacman/)
 
 ## Approch Taken
 
