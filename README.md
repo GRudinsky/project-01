@@ -3,7 +3,7 @@
 
 ## Overview 
 
-Pacman is a browser-based JavaScript game that I developed over a period of one week as my first project at Generel Assembly. 
+Pacman is a browser-based JavaScript game that I developed over a period of one week as my first project at General Assembly. 
 
 ### Game Play
 
