@@ -23,10 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function createBoard() {
     for (let i = 0; i < width ** 2; i++) {
       const cell = document.createElement('DIV')
-
       // Cell numbering for development purposes only
       // cell.innerHTML = i
-
       grid.appendChild(cell)
       cells.push(cell)
 
@@ -44,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
-
 
   // Defining player - related variables
   let playerDead = false
@@ -70,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keyup', (e) => {
 
       if (playerLives === 0) return
+      cells[playerIdx].classList.add('player')
       cells[playerIdx].classList.remove('player')
       switch (e.keyCode) {
         case 37:
